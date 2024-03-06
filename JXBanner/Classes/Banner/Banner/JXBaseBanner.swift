@@ -11,7 +11,7 @@ import UIKit
 let kMultiplier = 1000
 
 public class JXBaseBanner: UIView {
-
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.autoresizingMask = []
@@ -90,8 +90,8 @@ public class JXBaseBanner: UIView {
     
     lazy var collectionView: UICollectionView = {
         let collectionView: UICollectionView =
-            UICollectionView(frame: self.bounds,
-                             collectionViewLayout: self.layout)
+        UICollectionView(frame: self.bounds,
+                         collectionViewLayout: self.layout)
         collectionView.backgroundColor = UIColor.clear
         collectionView.isPagingEnabled = false
         collectionView.showsVerticalScrollIndicator = false
@@ -100,6 +100,15 @@ public class JXBaseBanner: UIView {
             .flexibleWidth,
             .flexibleHeight
         ]
+        let defs = UserDefaults.standard
+        var preferredLang: String = (defs.object(forKey: "AppleLanguages") as? [String] ?? ["en"]).first ?? "en"
+        if let userLanguage = defs.object(forKey: "XYUserLanguage") as? String, !userLanguage.isEmpty {
+            preferredLang = userLanguage
+        }
+        
+        if preferredLang == "ar" || preferredLang.contains("ar-") {
+            collectionView.semanticContentAttribute = .forceRightToLeft
+        }
         return collectionView
     }()
     
@@ -117,7 +126,7 @@ public class JXBaseBanner: UIView {
     var pageCount: Int = 0
     
     public var params: JXBannerParams = JXBannerParams()
-
+    
     /// The IndexPath of the item in the middle of the bannerview
     var currentIndexPath: IndexPath = IndexPath(row: 0, section: 0) {
         didSet { setCurrentIndex() }
@@ -147,15 +156,15 @@ extension JXBaseBanner {
     
     func start() {
         if params.isAutoPlay,
-            params.timeInterval > 0,
-            pageCount > 1 {
+           params.timeInterval > 0,
+           pageCount > 1 {
             if timer == nil {
                 timer = Timer.jx_scheduledTimer(
                     withTimeInterval: params.timeInterval,
                     repeats: true,
                     block: {(timer) in
                         self.autoScroll()
-                })
+                    })
                 RunLoop.current.add(timer!, forMode: .common)
             }
             resume()
@@ -171,40 +180,40 @@ extension JXBaseBanner {
     
     func scrollToIndexPath(
         _ indexPath: IndexPath, animated: Bool) {
-        
-        // Handle indexpath bounds
-        if params.cycleWay == .forward,
-            pageCount > 1 {
             
-            if indexPath.row >= kMultiplier * pageCount - pageCount{
-                currentIndexPath = IndexPath(row: (kMultiplier * pageCount / 2),
-                                             section: 0)
-                scrollToIndexPath(currentIndexPath, animated: false)
-                return
+            // Handle indexpath bounds
+            if params.cycleWay == .forward,
+               pageCount > 1 {
                 
-            }else if indexPath.row == -1 + pageCount {
-                currentIndexPath = IndexPath(row: (kMultiplier * pageCount / 2) + (pageCount - 1),
-                                             section: 0)
-                scrollToIndexPath(currentIndexPath, animated: false)
-                return
+                if indexPath.row >= kMultiplier * pageCount - pageCount{
+                    currentIndexPath = IndexPath(row: (kMultiplier * pageCount / 2),
+                                                 section: 0)
+                    scrollToIndexPath(currentIndexPath, animated: false)
+                    return
+                    
+                }else if indexPath.row == -1 + pageCount {
+                    currentIndexPath = IndexPath(row: (kMultiplier * pageCount / 2) + (pageCount - 1),
+                                                 section: 0)
+                    scrollToIndexPath(currentIndexPath, animated: false)
+                    return
+                }
             }
-        }
-        
-        if params.isPagingEnabled {
             
-            // reuse scrollToItem: to mask the bug of inaccurate scroll position
-            var scrollPosition: UICollectionView.ScrollPosition = .centeredHorizontally
-            if layout.params?.scrollDirection == .vertical {
-                scrollPosition = .centeredVertically
+            if params.isPagingEnabled {
+                
+                // reuse scrollToItem: to mask the bug of inaccurate scroll position
+                var scrollPosition: UICollectionView.ScrollPosition = .centeredHorizontally
+                if layout.params?.scrollDirection == .vertical {
+                    scrollPosition = .centeredVertically
+                }
+                collectionView.scrollToItem(at: indexPath,
+                                            at: scrollPosition,
+                                            animated: animated)
+                collectionView.scrollToItem(at: indexPath,
+                                            at: scrollPosition,
+                                            animated: animated)
             }
-            collectionView.scrollToItem(at: indexPath,
-                                        at: scrollPosition,
-                                        animated: animated)
-            collectionView.scrollToItem(at: indexPath,
-                                        at: scrollPosition,
-                                        animated: animated)
         }
-    }
     
     override public func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
@@ -215,16 +224,16 @@ extension JXBaseBanner {
     
     @objc func applicationDidEnterBackground(
         _ notification: Notification) {
-        pause()
-    }
+            pause()
+        }
     
     @objc func applicationDidBecomeActive(
         _ notification: Notification) {
-        // Determine if it's on screen
-        guard isShowingOnWindow() != false,
-            pageCount > 1 else { return }
-        resume()
-    }
+            // Determine if it's on screen
+            guard isShowingOnWindow() != false,
+                  pageCount > 1 else { return }
+            resume()
+        }
     
 }
 
