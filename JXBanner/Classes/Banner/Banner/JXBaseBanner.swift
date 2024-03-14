@@ -107,7 +107,11 @@ public class JXBaseBanner: UIView {
         }
         
         if preferredLang == "ar" || preferredLang.contains("ar-") {
-            collectionView.semanticContentAttribute = .forceRightToLeft
+            if #available(iOS 9.0, *) {
+                collectionView.semanticContentAttribute = .forceRightToLeft
+            } else {
+                // Fallback on earlier versions
+            }
         }
         return collectionView
     }()
